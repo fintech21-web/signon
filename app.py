@@ -1,12 +1,16 @@
-﻿from flask import Flask, render_template, request
+from flask import Flask, render_template, request
 import base64, os, requests
 from datetime import datetime
 
 app = Flask(__name__)
 
-# --- Telegram setup ---
-BOT_TOKEN = "PASTE_YOUR_NEW_BOT_TOKEN_HERE"
-YOUR_TELEGRAM_ID = 123456789  # Replace with your actual Telegram ID
+# --- Telegram setup (from environment variables) ---
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+YOUR_TELEGRAM_ID = os.getenv("OWNER_ID")
+
+# Safety check
+if not BOT_TOKEN or not YOUR_TELEGRAM_ID:
+    raise ValueError("BOT_TOKEN or OWNER_ID is not set in environment variables!")
 
 @app.route('/')
 def home():
