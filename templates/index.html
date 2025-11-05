@@ -1,48 +1,140 @@
-﻿<!DOCTYPE html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <title>Customer Signature</title>
+  <meta charset="UTF-8">
+  <title>Digital Signature Form</title>
   <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; margin-top: 40px; }
+    body {
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+      background-color: #f4f6f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    .card {
+      background: #fff;
+      padding: 40px 50px;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      max-width: 550px;
+      width: 100%;
+      text-align: center;
+    }
+
+    h1 {
+      color: #1a1a1a;
+      margin-bottom: 10px;
+      font-size: 1.8rem;
+    }
+
+    p {
+      color: #555;
+      font-size: 15px;
+      margin-bottom: 25px;
+    }
+
+    input {
+      width: 90%;
+      padding: 10px;
+      margin: 8px 0;
+      font-size: 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    .btn {
+      margin: 10px 5px;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      transition: background 0.3s;
+    }
+
+    .btn:hover { background-color: #0056b3; }
+    .btn-secondary { background-color: #6c757d; }
+    .btn-secondary:hover { background-color: #565e64; }
+
     .hidden { display: none; }
-    canvas { border: 2px solid black; border-radius: 6px; margin-top: 10px; }
-    button { margin: 10px; padding: 10px 20px; font-size: 16px; cursor: pointer; }
+
+    canvas {
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      width: 100%;
+      height: 200px;
+      margin-top: 15px;
+    }
+
+    hr {
+      border: none;
+      height: 1px;
+      background-color: #eee;
+      margin: 20px 0;
+    }
+
+    @media (max-width: 600px) {
+      .card { padding: 25px 20px; }
+      h1 { font-size: 1.5rem; }
+    }
   </style>
 </head>
 <body>
-  <h2>Sign Your Name</h2>
+  <div class="card">
+    <h1>Digital Signature</h1>
+    <p>Please review and provide your signature below.</p>
 
-  <button onclick="showTyped()">Type Signature</button>
-  <button onclick="showDrawn()">Draw Signature</button>
+    <hr>
 
-  <div id="typedDiv" class="hidden">
-    <h3>Type Your Signature</h3>
-    <input id="typedName" placeholder="Enter your name..." />
-    <br>
-    <button onclick="submitTyped()">Submit</button>
-  </div>
+    <div>
+      <input type="text" id="fullname" placeholder="Full Name (optional)" />
+      <input type="email" id="email" placeholder="Email (optional)" />
+    </div>
 
-  <div id="drawnDiv" class="hidden">
-    <h3>Draw Your Signature</h3>
-    <canvas id="signature-pad" width="400" height="200"></canvas>
-    <br>
-    <button onclick="clearPad()">Clear</button>
-    <button onclick="submitDrawn()">Submit</button>
+    <hr>
+
+    <div>
+      <button class="btn" onclick="showTyped()">Type Signature</button>
+      <button class="btn" onclick="showDrawn()">Draw Signature</button>
+    </div>
+
+    <!-- Typed Signature Section -->
+    <div id="typedDiv" class="hidden">
+      <h3>Type Your Signature</h3>
+      <input id="typedName" placeholder="Enter your signature text" />
+      <br>
+      <button class="btn" onclick="submitTyped()">Submit Signature</button>
+    </div>
+
+    <!-- Drawn Signature Section -->
+    <div id="drawnDiv" class="hidden">
+      <h3>Draw Your Signature</h3>
+      <canvas id="signature-pad"></canvas>
+      <br>
+      <button class="btn-secondary" onclick="clearPad()">Clear</button>
+      <button class="btn" onclick="submitDrawn()">Submit Signature</button>
+    </div>
   </div>
 
   <script>
-    const canvas = document.getElementById('signature-pad');
+    const canvas = document.getElementById("signature-pad");
     const signaturePad = new SignaturePad(canvas);
 
     function showTyped() {
-      document.getElementById('typedDiv').classList.remove('hidden');
-      document.getElementById('drawnDiv').classList.add('hidden');
+      document.getElementById("typedDiv").classList.remove("hidden");
+      document.getElementById("drawnDiv").classList.add("hidden");
     }
 
     function showDrawn() {
-      document.getElementById('drawnDiv').classList.remove('hidden');
-      document.getElementById('typedDiv').classList.add('hidden');
+      document.getElementById("drawnDiv").classList.remove("hidden");
+      document.getElementById("typedDiv").classList.add("hidden");
     }
 
     function clearPad() {
@@ -50,12 +142,14 @@
     }
 
     async function submitTyped() {
-      const name = document.getElementById('typedName').value.trim();
-      if (!name) return alert("Please enter your name.");
+      const name = document.getElementById("typedName").value.trim();
+      if (!name) return alert("Please enter your signature text.");
 
       const data = new FormData();
       data.append("type", "typed");
       data.append("typed_name", name);
+      data.append("fullname", document.getElementById("fullname").value.trim());
+      data.append("email", document.getElementById("email").value.trim());
 
       const res = await fetch("/submit_signature", { method: "POST", body: data });
       alert(await res.text());
@@ -67,9 +161,12 @@
       const data = new FormData();
       data.append("type", "drawn");
       data.append("signature", signaturePad.toDataURL());
+      data.append("fullname", document.getElementById("fullname").value.trim());
+      data.append("email", document.getElementById("email").value.trim());
 
       const res = await fetch("/submit_signature", { method: "POST", body: data });
       alert(await res.text());
+      signaturePad.clear();
     }
   </script>
 </body>
