@@ -1,0 +1,76 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <title>Customer Signature</title>
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin-top: 40px; }
+    .hidden { display: none; }
+    canvas { border: 2px solid black; border-radius: 6px; margin-top: 10px; }
+    button { margin: 10px; padding: 10px 20px; font-size: 16px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h2>Sign Your Name</h2>
+
+  <button onclick="showTyped()">Type Signature</button>
+  <button onclick="showDrawn()">Draw Signature</button>
+
+  <div id="typedDiv" class="hidden">
+    <h3>Type Your Signature</h3>
+    <input id="typedName" placeholder="Enter your name..." />
+    <br>
+    <button onclick="submitTyped()">Submit</button>
+  </div>
+
+  <div id="drawnDiv" class="hidden">
+    <h3>Draw Your Signature</h3>
+    <canvas id="signature-pad" width="400" height="200"></canvas>
+    <br>
+    <button onclick="clearPad()">Clear</button>
+    <button onclick="submitDrawn()">Submit</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('signature-pad');
+    const signaturePad = new SignaturePad(canvas);
+
+    function showTyped() {
+      document.getElementById('typedDiv').classList.remove('hidden');
+      document.getElementById('drawnDiv').classList.add('hidden');
+    }
+
+    function showDrawn() {
+      document.getElementById('drawnDiv').classList.remove('hidden');
+      document.getElementById('typedDiv').classList.add('hidden');
+    }
+
+    function clearPad() {
+      signaturePad.clear();
+    }
+
+    async function submitTyped() {
+      const name = document.getElementById('typedName').value.trim();
+      if (!name) return alert("Please enter your name.");
+
+      const data = new FormData();
+      data.append("type", "typed");
+      data.append("typed_name", name);
+
+      const res = await fetch("/submit_signature", { method: "POST", body: data });
+      alert(await res.text());
+    }
+
+    async function submitDrawn() {
+      if (signaturePad.isEmpty()) return alert("Please draw your signature first.");
+
+      const data = new FormData();
+      data.append("type", "drawn");
+      data.append("signature", signaturePad.toDataURL());
+
+      const res = await fetch("/submit_signature", { method: "POST", body: data });
+      alert(await res.text());
+    }
+  </script>
+</body>
+</html>
